@@ -7,7 +7,7 @@ This repository is a walkthrough of deploying the link:https://coder.com[Coder.c
 
 == Contents
 * link:https://github.com/bbertka/code-server-eks#part-1---install-readiness[Install Readiness]
-* link:https://github.com/bbertka/code-server-eks#part-2---deploy-eks-cluster[Deploy EKS Cluster]
+* link:https://github.com/bbertka/code-server-eks#part-2---deploy-an-amazon-eks-cluster[Deploy EKS Cluster]
 
 [#install-readiness]
 = Part 1 - Preparing for Installation
@@ -86,6 +86,6 @@ $ kubectl version --client
     }
 ----
 
-[#deploy-eks-cluster]
+[#deploy-an-amazon-eks-cluster]
 = Part 2 - Deploy an Amazon EKS Cluster
 
