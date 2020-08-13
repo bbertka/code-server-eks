@@ -3,7 +3,7 @@
 image:images/main-dashboard.png[]
 
 == About
-This repository is a walkthrough of deploying the link:https://coder.com[Coder.com] official link:https://hub.docker.com/r/codercom/code-server[code-server Docker image of VSCode] in a repeatable tutorial/workshop format.  After working through this lab you will have a web-accessable deployment of VSCode running on Amazon EKS Kubernetes, backed by persistent EBS volumes.  Now you can code anywhere using your preferred IDE!
+This repository is a walkthrough of deploying the link:https://coder.com[Coder.com] official link:https://hub.docker.com/r/codercom/code-server[code-server Docker image of VSCode] in a repeatable tutorial/workshop format.  After working through this lab you will have a web-accessable deployment of VSCode running on Amazon EKS Kubernetes, backed by persistent EFS volumes.  Now you can code anywhere using your preferred IDE!
 
 == Contents
 * link:https://github.com/bbertka/code-server-eks#part-1---preparing-for-installation[Install Readiness]
@@ -67,7 +67,7 @@ $ eksctl version
 0.25.0
 ----
 
-== Setup kubectl
+== Setup kubectl & HELM
 . Download and Install kubectl
 +
 ----
@@ -91,10 +91,15 @@ $ kubectl version --client
     Platform:"darwin/amd64"
     }
 ----
+. Install HELM
++
+----
+brew install helm
+----
 
 [#deploy-an-amazon-eks-cluster]
 = Part 2 - Deploy an Amazon EKS Cluster
-In order to deploy the Docker image for code-server, we need an EKS cluster to work with.  There are two options for us for backing an EKS cluster, Fargate, or your own managed VPC nodes.  Since VSCode needs some persistence in order to make this usuable for you in a production-like setting, we are opting for managed nodes deployment to make it easier to deploy with persistent vilume claims via EBS.
+In order to deploy the Docker image for code-server, we need an EKS cluster to work with.  There are two options for us for backing an EKS cluster, Fargate, or your own managed VPC nodes.  Since VSCode needs some persistence in order to make this usuable for you in a production-like setting, we are opting for managed nodes deployment to make it easier to deploy with persistent volume claims via EFS.
 
 . Download or copy your AWS public SSH key to your current directory and make sure the permissions are set securely.
 +
@@ -110,32 +115,51 @@ $ eksctl create cluster \
  --version 1.17 \
  --region us-east-2 \
  --nodegroup-name linux-nodes \
- --node-type t3.micro \
- --nodes 2 \
- --nodes-min 2 \
- --nodes-max 2 \
+ --node-type t3.small \
+ --nodes 3 \
+ --nodes-min 1 \
+ --nodes-max 3 \
  --ssh-access \
  --ssh-public-key eks.pub \
  --managed
 ----
 
-. After 10-15 minutes, test that Kubectl has been configured correctly
-+
-----
-$ kubectl get svc
-NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
-kubernetes   ClusterIP   10.100.0.1   <none>        443/TCP   56m
-----
-
-. Check the ready status of your cluster nodes. Note the Availability zone your node 
-was created in for later steps using the console
+. After 10-15 minutes, test that Kubectl has been configured and see the ready status of your cluster nodes. 
 + 
 ----
-$ kubectl get nodes 
-NAME                                           STATUS   ROLES    AGE    VERSION
-ip-192-168-19-97.us-east-2.compute.internal    Ready    <none>   5m   v1.17.9-eks-4c6976
-ip-192-168-55-244.us-east-2.compute.internal   Ready    <none>   5m   v1.17.9-eks-4c6976
+$ kubectl get nodes
+NAME                                           STATUS   ROLES    AGE     VERSION
+ip-192-168-10-182.us-east-2.compute.internal   Ready    <none>   3m46s   v1.17.9-eks-4c6976
+ip-192-168-58-121.us-east-2.compute.internal   Ready    <none>   3m49s   v1.17.9-eks-4c6976
+ip-192-168-74-214.us-east-2.compute.internal   Ready    <none>   3m49s   v1.17.9-eks-4c6976
 ----
+
+. Install the AWS EFS CSI Driver for mounting EFS volumes in pods
++
+----
+$ helm install aws-efs-csi-driver https://github.com/kubernetes-sigs/aws-efs-csi-driver/releases/download/v1.0.0/helm-chart.tgz
+NAME: aws-efs-csi-driver
+LAST DEPLOYED: Thu Aug 13 13:42:28 2020
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+To verify that aws-efs-csi-driver has started, run:
+
+    kubectl get pod -n kube-system -l "app.kubernetes.io/name=aws-efs-csi-driver,app.kubernetes.io/instance=aws-efs-csi-driver"
+----
+
+. Verifying the EFS CSI Driver
++
+----
+$ kubectl get pod -n kube-system -l "app.kubernetes.io/name=aws-efs-csi-driver,app.kubernetes.io/instance=aws-efs-csi-driver"
+NAME                 READY   STATUS    RESTARTS   AGE
+efs-csi-node-6xmcf   3/3     Running   0          57s
+efs-csi-node-7bg9c   3/3     Running   0          57s
+efs-csi-node-m9l47   3/3     Running   0          57s
+----
+
 
 [#setup-cluster-ingress]
 = Part 3 - Setup Cluster Ingress
@@ -213,17 +237,49 @@ alb-ingress-controller-646d767ccf-4h624   1/1     Running   0          12s
 ----
 
 
-[#deploy-code-server]
-= Part 3 - Deploy Code Server
+= Part 3 - Set up Persistent File System
 
-. Create an EBS volume for example of 10Gi in the same AZ as your EKS node.  Check the AWS console first to ensure your EKS node is where you think it is and make sure the Volume is created in a same AZ as the second EKS Node instance. For example if you have two nodes in us-east2a and us-east-2b, create the Volume in us-east-2b.  
+. Get your VPC ID for your cluster (again)
 +
 ----
-aws ec2 create-volume \
-    --volume-type gp2 \
-    --size 10 \
-    --availability-zone us-east-2b
+$ aws eks describe-cluster --name code-server --query "cluster.resourcesVpcConfig.vpcId" --output text
+vpc-015b916167f38076a
 ----
+
+. Locate the CIDR range for your cluster
++
+----
+$ aws ec2 describe-vpcs --vpc-ids vpc-015b916167f38076a --query "Vpcs[].CidrBlock" --output text
+192.168.0.0/16
+----
+
+. Create an Amazon EFS file system for your Amazon EKS cluster (link:https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html[(Steps 3 & 4 on AWS Docs)]
+
+. Verify your File system ID 
++
+----
+$ aws efs describe-file-systems --query "FileSystems[*].FileSystemId" --output text
+fs-ab9729d3
+----
+
+. Deploy the StorageClass
++
+----
+$ kubectl apply -f efs-storageclass.yml -n code-server
+storageclass.storage.k8s.io/efs-sc created
+----
+
+. View Storage Classes
++
+----
+$ kubectl get storageclass -n code-server
+NAME            PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+efs-sc          efs.csi.aws.com         Delete          Immediate              false                  13m
+gp2 (default)   kubernetes.io/aws-ebs   Delete          WaitForFirstConsumer   false                  4h26m
+----
+
+[#deploy-code-server]
+= Part 3 - Deploy Code Server
 
 . Create our code-server namespace
 +
@@ -232,7 +288,7 @@ $ kubectl apply -f code-server-namespace.yml
 namespace/code-server created
 ----
 
-. Edit the coder-server-pv.yml Persistant Volume definition with your volumeID as created earlier
+. Update the code-server-pv.yml csi:volumeHandle with your EFS Filesystem ID
 +
 ----
 apiVersion: "v1"
@@ -240,14 +296,15 @@ kind: "PersistentVolume"
 metadata:
   name: "code-server-pv"
 spec:
-  storageClassName: manual
   capacity:
-    storage: "10Gi"
+    storage: "5Gi"
   accessModes:
     - "ReadWriteOnce"
-  awsElasticBlockStore:
-    fsType: "ext4"
-    volumeID: "vol-0c6321b290fbd645e"
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: fs-ab9729d3
 ----
 
 . Deploy the PV
@@ -255,14 +312,6 @@ spec:
 ----
 $ kubectl apply -f code-server-pv.yml
 persistentvolume/code-server created
-----
-
-. Check the status of the PV
-+
-----
-$ kubectl get pv -n code-server
-NAME             CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
-code-server-pv   10Gi       RWO            Retain           Available           manual                  29s
 ----
 
 . Create a PV Claim for the PV
@@ -277,11 +326,11 @@ persistentvolumeclaim/code-server-pv-claim created
 ----
 $ kubectl get pv -n code-server
 NAME             CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                              STORAGECLASS   REASON   AGE
-code-server-pv   10Gi       RWO            Retain           Bound    code-server/code-server-pv-claim   manual                  2m17s
+code-server-pv   5Gi        RWX            Retain           Bound    code-server/code-server-pv-claim   efs-sc                  3m47s
 
 $ kubectl get pvc -n code-server
 NAME                   STATUS   VOLUME           CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-code-server-pv-claim   Bound    code-server-pv   10Gi       RWO            manual         14s
+code-server-pv-claim   Bound    code-server-pv   5Gi        RWX            efs-sc         58s
 ----
 
 . Create a Kubernetes Deployment for code-server.  Change the password in the manifest if desired is also recommended.
@@ -317,7 +366,7 @@ replicaset.apps/code-server-deployment-6555d99486   1         1         1       
 
 [#connect-to-your-ide]
 = Part 5 - Connect to your IDE
-Now that your code-server deployment is sucessfully running on EKS with an EBS backed persistent volume, we need to create the ALB ingress we will use to connect to the instance in our browser.
+Now that your code-server deployment is sucessfully running on EKS with an EFS backed persistent volume, we need to create the ALB ingress we will use to connect to the instance in our browser.
 
 . Create the ALB Ingress 
 +
@@ -334,6 +383,20 @@ NAME                  HOSTS   ADDRESS                                           
 code-server-ingress   *       5e1c4c56-codeserver-codese-74a8-22329140.us-east-2.elb.amazonaws.com   80      33s
 ----
 
-. After a few minutes, open the browser and connect to your instance on the ALB address, if prompted for a password, use the one you created in the deployment manifest "alwaysbekind" or your custom password. 
+After a few minutes, open the browser and connect to your instance on the ALB address, if prompted for a password, use the one you created in the deployment manifest
+
+image:images/image:images/code-server.png[]
 
 image:images/code-server.png[]
+
+Congratulations, you have deployed a stateful VSCode on EKS!
+
+= Part 6 - Customize you IDE
+
+Now lets test the persistence of our IDE.  We will clone this repo to the [project] directory.  Then delete the deployment and redeploy. Hopefully our project is still there when we redeploy!
+
+Open a new Terminal shell
+
+image:images/terminal.png[]
+
+
