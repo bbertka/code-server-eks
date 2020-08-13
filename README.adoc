@@ -433,7 +433,7 @@ image:images/terminal.png[]
 
 2. You will be presented with an empty terminal 
 
-image:images/terminal-new.png[]
+image:images/new-terminal.png[]
 
 3. Navigate to the ~/project folder and clone a GIT repo
 
