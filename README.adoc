@@ -8,6 +8,8 @@ This repository is a walkthrough of deploying the link:https://coder.com[Coder.c
 == Contents
 * link:https://github.com/bbertka/code-server-eks#part-1---preparing-for-installation[Install Readiness]
 * link:https://github.com/bbertka/code-server-eks#part-2---deploy-an-amazon-eks-cluster[Deploy EKS Cluster]
+* link:https://github.com/bbertka/code-server-eks#part-3---setup-cluster-ingress[Setup ALB Ingress for your Cluster]
+* link:https://github.com/bbertka/code-server-eks#part-4---deploy-code-server[Deploy code-server]]
 
 == Assumptions
 * You already have an AWS account
@@ -114,25 +116,9 @@ $ eksctl create cluster \
  --ssh-access \
  --ssh-public-key eks.pub \
  --managed
-
-...
-
-[*]  all EKS cluster resources for "code-server" have been created
-[ℹ]  nodegroup "linux-nodes" has 3 node(s)
-[ℹ]  node "ip-192-168-11-177.us-east-2.compute.internal" is ready
-[ℹ]  node "ip-192-168-55-244.us-east-2.compute.internal" is ready
-[ℹ]  node "ip-192-168-83-5.us-east-2.compute.internal" is ready
-[ℹ]  waiting for at least 1 node(s) to become ready in "linux-nodes"
-[ℹ]  nodegroup "linux-nodes" has 3 node(s)
-[ℹ]  node "ip-192-168-11-177.us-east-2.compute.internal" is ready
-[ℹ]  node "ip-192-168-55-244.us-east-2.compute.internal" is ready
-[ℹ]  node "ip-192-168-83-5.us-east-2.compute.internal" is ready
-[ℹ]  kubectl command should work with "/Users/bbertka/.kube/config", try 'kubectl get nodes'
-[*]  EKS cluster "code-server" in "us-east-2" region is ready
 ----
 
-
-. Test that Kubectl has been configured correctly
+. After 10-15 minutes, test that Kubectl has been configured correctly
 +
 ----
 $ kubectl get svc
@@ -140,3 +126,82 @@ NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
 kubernetes   ClusterIP   10.100.0.1   <none>        443/TCP   56m
 ----
 
+
+[#setup-cluster-ingress]
+= Part 3 - Setup Cluster Ingress
+To have access to our IDE via the browser, we need to load balancce to the running container within Kubernetes. To do this we create an Application Load Balancer.  Fortunetly, AWS provides an ALB controller to make this easy for us which integrates nicely with EKS.
+
+. Create an IAM OIDC provider and associate it with your cluster
++
+----
+$ eksctl utils associate-iam-oidc-provider \
+    --region us-east-2 \
+    --cluster code-server \
+    --approve
+----
+
+. Download an IAM policy for the ALB Ingress Controller pod that allows it to make calls to AWS APIs on your behalf
++
+----
+curl -o iam-policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-alb-ingress-controller/v1.1.8/docs/examples/iam-policy.json
+----
+
+. Create an IAM policy called ALBIngressControllerIAMPolicy using the policy downloaded in the previous step.  Take note of the ARN policy string that was created for a following step.
++
+----
+$ aws iam create-policy \
+    --policy-name ALBIngressControllerIAMPolicy \
+    --policy-document file://iam-policy.json
+----
+
+. Create a Kubernetes service account named alb-ingress-controller in the kube-system namespace, a cluster role, and a cluster role binding for the ALB Ingress Controller to use with the following command
++
+----
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/aws-alb-ingress-controller/v1.1.8/docs/examples/rbac-role.yaml
+----
+
+. Create an IAM role for the ALB Ingress Controller and attach the role to the service account created in the previous step. The command that follows only works for clusters that were created with eksctl.  Note use your ARN from the previous step.
++
+----
+eksctl create iamserviceaccount \
+    --region us-east-2 \
+    --name alb-ingress-controller \
+    --namespace kube-system \
+    --cluster code-server \
+    --attach-policy-arn arn:aws:iam::111122223333:policy/ALBIngressControllerIAMPolicy \
+    --override-existing-serviceaccounts \
+    --approve
+----
+
+. Deploy your ALB Controller, note that initially it will error until the subsequent steps
++
+----
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/aws-alb-ingress-controller/v1.1.8/docs/examples/alb-ingress-controller.yaml
+----
+
+. Edit the ALB Deployment with your cluster name, your EKS VPC, and region
++
+----
+kubectl edit deployment.apps/alb-ingress-controller -n kube-system
+
+...
+    spec:
+      containers:
+      - args:
+        - --ingress-class=alb
+        - --cluster-name=code-server
+        - --aws-vpc-id=vpc-03468a8157edca5bd
+        - --aws-region=us-east-2
+----
+
+. Confirm that the ALB Ingress Controller is running with the following command.
++
+----
+$ kubectl get pods -n kube-system
+NAME                                      READY   STATUS    RESTARTS   AGE
+alb-ingress-controller-646d767ccf-4h624   1/1     Running   0          12s
+----
+
+
+[#deploy-code-server]
+= Part 3 - Deploy Code Server
