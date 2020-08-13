@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "code-server-deployment"
+  namespace: "code-server"
+spec:
+  selector:
+    matchLabels:
+      app: "code-server"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: "code-server"
+    spec:
+      containers:
+      - image: codercom/code-server:latest
+        imagePullPolicy: Always
+        name: "code-server"
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PASSWORD
+          value: "alwaysbekind"
+        volumeMounts:
+        - name: code-server-storage
+          mountPath: /home/coder/project
+      volumes:
+      - name: code-server-storage
+        persistentVolumeClaim:
+          claimName: code-server-pv-claim

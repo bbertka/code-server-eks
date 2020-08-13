@@ -110,9 +110,9 @@ $ eksctl create cluster \
  --region us-east-2 \
  --nodegroup-name linux-nodes \
  --node-type t3.micro \
- --nodes 3 \
- --nodes-min 1 \
- --nodes-max 3 \
+ --nodes 2 \
+ --nodes-min 2 \
+ --nodes-max 2 \
  --ssh-access \
  --ssh-public-key eks.pub \
  --managed
@@ -126,6 +126,15 @@ NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
 kubernetes   ClusterIP   10.100.0.1   <none>        443/TCP   56m
 ----
 
+. Check the ready status of your cluster nodes. Note the Availability zone your node 
+was created in for later steps using the console
++ 
+----
+$ kubectl get nodes 
+NAME                                           STATUS   ROLES    AGE    VERSION
+ip-192-168-19-97.us-east-2.compute.internal    Ready    <none>   5m   v1.17.9-eks-4c6976
+ip-192-168-55-244.us-east-2.compute.internal   Ready    <none>   5m   v1.17.9-eks-4c6976
+----
 
 [#setup-cluster-ingress]
 = Part 3 - Setup Cluster Ingress
@@ -205,3 +214,121 @@ alb-ingress-controller-646d767ccf-4h624   1/1     Running   0          12s
 
 [#deploy-code-server]
 = Part 3 - Deploy Code Server
+
+. Create an EBS volume for example of 10Gi in the same AZ as your EKS node.  Check the AWS console first to ensure your EKS node is where you think it is and make sure the Volume is created in a same AZ as the second EKS Node instance. For example if you have two nodes in us-east2a and us-east-2b, create the Volume in us-east-2b.  
++
+----
+aws ec2 create-volume \
+    --volume-type gp2 \
+    --size 10 \
+    --availability-zone us-east-2b
+----
+
+. Create our code-server namespace
++
+----
+$ kubectl apply -f code-server-namespace.yml
+namespace/code-server created
+----
+
+. Edit the coder-server-pv.yml Persistant Volume definition with your volumeID as created earlier
++
+----
+apiVersion: "v1"
+kind: "PersistentVolume"
+metadata:
+  name: "code-server-pv"
+spec:
+  storageClassName: manual
+  capacity:
+    storage: "10Gi"
+  accessModes:
+    - "ReadWriteOnce"
+  awsElasticBlockStore:
+    fsType: "ext4"
+    volumeID: "vol-0c6321b290fbd645e"
+----
+
+. Deploy the PV
++
+----
+$ kubectl apply -f code-server-pv.yml -n code-server
+persistentvolume/code-server-pv created
+____
+
+. Check the status of the PV
++
+----
+$ kubectl get pv -n code-server
+NAME             CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
+code-server-pv   10Gi       RWO            Retain           Available           manual                  29s
+----
+
+. Create a PV Claim for the PV
++
+----
+$ kubectl apply -f code-server-pv-claim.yml -n code-server
+persistentvolumeclaim/code-server-pv-claim created
+----
+
+. Check the status of the PV and PV claim
++
+----
+$ kubectl get pv -n code-server
+NAME             CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                              STORAGECLASS   REASON   AGE
+code-server-pv   10Gi       RWO            Retain           Bound    code-server/code-server-pv-claim   manual                  2m17s
+
+kubectl get pvc -n code-server
+NAME                   STATUS   VOLUME           CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+code-server-pv-claim   Bound    code-server-pv   10Gi       RWO            manual         14s
+----
+
+. Create a Kubernetes Deployment for code-server.  Change the password in the manifest if desired is also recommended.
++
+----
+$ kubectl apply -f code-server-deployment.yml -n code-server
+deployment.apps/code-server-deployment created
+----
+
+. Create a service for connecting to our container on its exposed port
++
+----
+$ kubectl apply -f code-server-service.yml -n code-server
+service/service-code-server created
+----
+
+.  If all goes well you should see output as such
++
+----
+$ kubectl get all -n code-server
+NAME                                          READY   STATUS    RESTARTS   AGE
+pod/code-server-deployment-6555d99486-jdbcd   1/1     Running   0          27s
+
+NAME                          TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+service/service-code-server   NodePort   10.100.19.111   <none>        80:32366/TCP   1s
+
+NAME                                     READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/code-server-deployment   1/1     1            1           27s
+
+NAME                                                DESIRED   CURRENT   READY   AGE
+replicaset.apps/code-server-deployment-6555d99486   1         1         1       28s
+----
+
+. Create the ALB Ingress 
++
+----
+$ kubectl apply -f code-server-ingress.yml -n code-server
+ingress.extensions/code-server-ingress created
+____
+
+. Obtain the ALB Ingress address
++
+----
+$ kubectl get ingress -n code-server
+NAME                  HOSTS   ADDRESS                                                                PORTS   AGE
+code-server-ingress   *       5e1c4c56-codeserver-codese-74a8-22329140.us-east-2.elb.amazonaws.com   80      33s
+____
+
+. After a few minutes, open the browser and connect to your instance, if prompted for a password, use the one you created in the deployment manifest
+
+image:images/code-server.png[]
