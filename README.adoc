@@ -1,0 +1,89 @@
+= Deploying VSCode with Kubernetes on Amazon EKS
+
+image:images/main-dashboard.png[]
+
+== About
+This repository is a walkthrough of deploying VSCode via coder.com's code-server official Docker image in a repeatable tutorial/workshop format.  After working through this lab you will have a web-accessable deployment of VSCode running on Amazon EKS Kubernetes, backed by persistent EBS volumes.  Now you can code anywhere using your preferred IDE!
+
+== Contents
+* link:https://github.com/bbertka/code-server-eks#part-1---install-readiness[Install Readiness]
+* link:https://github.com/bbertka/code-server-eks#part-2---install-readiness[Deploy EKS Cluster]
+
+[#install-readiness]
+= Part 1 - Preparing for Installation
+
+== Setup AWS CLI
+. Download and Install AWS CLI v2. 
++
+----
+$ curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
+sudo installer -pkg AWSCLIV2.pkg -target /
+----
+. Check for successful installation
++
+----
+$ aws --version
+aws-cli/2.0.38 Python/3.7.4 Darwin/17.7.0 exe/x86_64
+----
+
+. Configure your AWS credentials for your preferred region
++
+----
+$ aws configure
+AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
+AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+Default region name [None]: us-east-2
+Default output format [None]: json
+----
+
+== Setup Amazon EKS CLI - eksctl
+. If using a Mac, we are assuming you have homebrew installed, otherwise please install it now
++
+----
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+----
+. Next, install the Weavworks tap
++
+----
+$ brew tap weaveworks/tap
+----
+
+. Finally, install eksctl
++
+----
+$ brew install weaveworks/tap/eksctl
+---- 
+
+. Check for successful installation
++
+----
+$ eksctl version
+0.25.0
+----
+
+== Setup kubectl
+. Download and Install kubectl
++
+----
+$ curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl"
+$ chmod +x ./kubectl
+$ sudo mv ./kubectl /usr/local/bin/kubectl
+----
+. Check for successful installation
++
+----
+$ kubectl version --client
+    Client Version: version.Info { 
+    Major:"1",
+    Minor:"18",
+    GitVersion:"v1.18.4",
+    GitCommit:"c96aede7b5205121079932896c4ad89bb93260af",
+    GitTreeState:"clean",
+    BuildDate:"2020-06-17T11:41:22Z",
+    GoVersion:"go1.13.9",
+    Compiler:"gc", 
+    Platform:"darwin/amd64"
+    }
+----
+
+= Part 2 - Deploy an Amazon EKS Cluster
