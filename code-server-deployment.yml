@@ -19,6 +19,9 @@ spec:
         name: "code-server"
         ports:
         - containerPort: 8080
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsUser: 0
         env:
         - name: PASSWORD
           value: "alwaysbekind"

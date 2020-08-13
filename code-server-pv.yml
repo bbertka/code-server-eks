@@ -3,11 +3,12 @@ kind: "PersistentVolume"
 metadata:
   name: "code-server-pv"
 spec:
-  storageClassName: manual
   capacity:
-    storage: "10Gi"
+    storage: "5Gi"
   accessModes:
     - "ReadWriteOnce"
-  awsElasticBlockStore: 
-    fsType: "ext4" 
-    volumeID: "vol-0fa6ef518d883e4c9" 
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: fs-738c320b

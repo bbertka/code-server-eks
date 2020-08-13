@@ -3,9 +3,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: code-server-pv-claim
 spec:
-  storageClassName: manual
   accessModes:
     - ReadWriteOnce
+  storageClassName: efs-sc
   resources:
     requests:
-      storage: 10Gi
+      storage: 5Gi

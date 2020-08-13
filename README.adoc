@@ -10,6 +10,7 @@ This repository is a walkthrough of deploying the link:https://coder.com[Coder.c
 * link:https://github.com/bbertka/code-server-eks#part-2---deploy-an-amazon-eks-cluster[Deploy EKS Cluster]
 * link:https://github.com/bbertka/code-server-eks#part-3---setup-cluster-ingress[Setup ALB Ingress for your Cluster]
 * link:https://github.com/bbertka/code-server-eks#part-4---deploy-code-server[Deploy code-server]]
+* link:https://github.com/bbertka/code-server-eks#part-5---connect-to-your-ide[Connect to your IDE]]
 
 == Assumptions
 * You already have an AWS account
@@ -314,6 +315,10 @@ NAME                                                DESIRED   CURRENT   READY   
 replicaset.apps/code-server-deployment-6555d99486   1         1         1       28s
 ----
 
+[#connect-to-your-ide]
+= Part 5 - Connect to your IDE
+Now that your code-server deployment is sucessfully running on EKS with an EBS backed persistent volume, we need to create the ALB ingress we will use to connect to the instance in our browser.
+
 . Create the ALB Ingress 
 +
 ----
@@ -329,6 +334,6 @@ NAME                  HOSTS   ADDRESS                                           
 code-server-ingress   *       5e1c4c56-codeserver-codese-74a8-22329140.us-east-2.elb.amazonaws.com   80      33s
 ----
 
-. After a few minutes, open the browser and connect to your instance, if prompted for a password, use the one you created in the deployment manifest
+. After a few minutes, open the browser and connect to your instance on the ALB address, if prompted for a password, use the one you created in the deployment manifest "alwaysbekind" or your custom password. 
 
 image:images/code-server.png[]
