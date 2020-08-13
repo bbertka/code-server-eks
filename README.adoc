@@ -3,7 +3,7 @@
 image:images/main-dashboard.png[]
 
 == About
-This repository is a walkthrough of deploying VSCode via coder.com's code-server official Docker image in a repeatable tutorial/workshop format.  After working through this lab you will have a web-accessable deployment of VSCode running on Amazon EKS Kubernetes, backed by persistent EBS volumes.  Now you can code anywhere using your preferred IDE!
+This repository is a walkthrough of deploying the link:https://coder.com[Coder.com] official link:https://hub.docker.com/r/codercom/code-server[code-server Docker image of VSCode] in a repeatable tutorial/workshop format.  After working through this lab you will have a web-accessable deployment of VSCode running on Amazon EKS Kubernetes, backed by persistent EBS volumes.  Now you can code anywhere using your preferred IDE!
 
 == Contents
 * link:https://github.com/bbertka/code-server-eks#part-1---install-readiness[Install Readiness]
