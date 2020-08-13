@@ -251,7 +251,7 @@ spec:
 
 . Deploy the PV
 +
-----
+____
 $ kubectl apply -f code-server-pv.yml -n code-server
 persistentvolume/code-server-pv created
 ____
@@ -278,7 +278,7 @@ $ kubectl get pv -n code-server
 NAME             CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                              STORAGECLASS   REASON   AGE
 code-server-pv   10Gi       RWO            Retain           Bound    code-server/code-server-pv-claim   manual                  2m17s
 
-kubectl get pvc -n code-server
+$ kubectl get pvc -n code-server
 NAME                   STATUS   VOLUME           CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 code-server-pv-claim   Bound    code-server-pv   10Gi       RWO            manual         14s
 ----
