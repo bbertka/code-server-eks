@@ -262,6 +262,39 @@ $ aws efs describe-file-systems --query "FileSystems[*].FileSystemId" --output t
 fs-ab9729d3
 ----
 
+. Create an EFS Application access point for the Coder user to write to on behalf of the user
++
+----
+aws efs create-access-point --file-system-id fs-738c320b --posix-user Uid=1000,Gid=1000 --root-directory "Path=/home/coder/project, CreationInfo={OwnerUid=1000,OwnerGid=1000,Permissions=777}"
+{
+    "ClientToken": "90d663c9-be81-4009-8d8a-5ded1a8c1512",
+    "Tags": [],
+    "AccessPointId": "fsap-027a9fe34c790c6b0",
+    "AccessPointArn": "arn:aws:elasticfilesystem:us-east-2:370534301218:access-point/fsap-027a9fe34c790c6b0",
+    "FileSystemId": "fs-738c320b",
+    "PosixUser": {
+        "Uid": 1000,
+        "Gid": 1000
+    },
+    "RootDirectory": {
+        "Path": "/home/coder/project",
+        "CreationInfo": {
+            "OwnerUid": 1000,
+            "OwnerGid": 1000,
+            "Permissions": "777"
+        }
+    },
+    "OwnerId": "370534301218",
+    "LifeCycleState": "creating"
+}
+----
+
+. Record the Accesspoint created above for use in the PV specification
++
+----
+fsap-027a9fe34c790c6b0
+----
+
 . Deploy the StorageClass
 +
 ----
@@ -288,7 +321,7 @@ $ kubectl apply -f code-server-namespace.yml
 namespace/code-server created
 ----
 
-. Update the code-server-pv.yml csi:volumeHandle with your EFS Filesystem ID
+. Update the code-server-pv.yml csi:volumeHandle with your EFS Filesystem ID and EFS Accesspoint ID
 +
 ----
 apiVersion: "v1"
@@ -304,7 +337,7 @@ spec:
   storageClassName: efs-sc
   csi:
     driver: efs.csi.aws.com
-    volumeHandle: fs-ab9729d3
+    volumeHandle: fs-ab9729d3::fsap-027a9fe34c790c6b0
 ----
 
 . Deploy the PV
@@ -391,12 +424,49 @@ image:images/code-server.png[]
 
 Congratulations, you have deployed a stateful VSCode on EKS!
 
-= Part 6 - Customize you IDE
+= Part 6 - Customize your IDE
 
 Now lets test the persistence of our IDE.  We will clone this repo to the [project] directory.  Then delete the deployment and redeploy. Hopefully our project is still there when we redeploy!
 
-Open a new Terminal shell
+1. Navigate to the side bar and Open a new Terminal shell
 
 image:images/terminal.png[]
 
+2. You will be presented with an empty terminal 
 
+image:images/terminal-new.png[]
+
+3. Navigate to the ~/project folder and clone a GIT repo
+
+image:images/clone-repo.png[]
+
+4. Use the GUI to create a text file
+
+image:images/clone-repo.png[]
+
+= Part 7 - Delete the Deployment and re-delpoy, ensure Persistence
+
+. Delete the deployment
++
+----
+$ kubectl delete deployment code-server-deployment -n code-server
+deployment.apps "code-server-deployment" deleted
+----
+
+. Check there is no pods remaining
++
+----
+$ kubectl get pods -n code-server
+No resources found in code-server namespace.
+----
+
+. Redeploy with all project files intact
++
+----
+$ kubectl apply -f code-server-deployment.yml -n code-server
+deployment.apps/code-server-deployment created
+----
+
+image:images/redeploy.png[]
+
+== Congratulations! You have deoployed a stateful VSCode instance on EKS

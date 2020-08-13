@@ -19,12 +19,13 @@ spec:
         name: "code-server"
         ports:
         - containerPort: 8080
-        securityContext:
-          allowPrivilegeEscalation: false
-          runAsUser: 0
         env:
         - name: PASSWORD
           value: "alwaysbekind"
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
         volumeMounts:
         - name: code-server-storage
           mountPath: /home/coder/project
