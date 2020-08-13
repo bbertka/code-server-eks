@@ -251,10 +251,10 @@ spec:
 
 . Deploy the PV
 +
-____
-$ kubectl apply -f code-server-pv.yml -n code-server
-persistentvolume/code-server-pv created
-____
+----
+$ kubectl apply -f code-server-pv.yml
+persistentvolume/code-server created
+----
 
 . Check the status of the PV
 +
@@ -316,18 +316,18 @@ replicaset.apps/code-server-deployment-6555d99486   1         1         1       
 
 . Create the ALB Ingress 
 +
-____
+----
 $ kubectl apply -f code-server-ingress.yml -n code-server
 ingress.extensions/code-server-ingress created
-____
+----
 
 . Obtain the ALB Ingress address
 +
-____
+----
 $ kubectl get ingress -n code-server
 NAME                  HOSTS   ADDRESS                                                                PORTS   AGE
 code-server-ingress   *       5e1c4c56-codeserver-codese-74a8-22329140.us-east-2.elb.amazonaws.com   80      33s
-____
+----
 
 . After a few minutes, open the browser and connect to your instance, if prompted for a password, use the one you created in the deployment manifest
 
