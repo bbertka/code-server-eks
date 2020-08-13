@@ -11,6 +11,8 @@ This repository is a walkthrough of deploying the link:https://coder.com[Coder.c
 * link:https://github.com/bbertka/code-server-eks#part-3---setup-cluster-ingress[Setup ALB Ingress for your Cluster]
 * link:https://github.com/bbertka/code-server-eks#part-4---deploy-code-server[Deploy code-server]]
 * link:https://github.com/bbertka/code-server-eks#part-5---connect-to-your-ide[Connect to your IDE]]
+* link:https://github.com/bbertka/code-server-eks#part-6---using-your-ide[Using your IDE]]
+* link:https://github.com/bbertka/code-server-eks#part-7---testing-your-ide[Testing your IDE]]
 
 == Assumptions
 * You already have an AWS account
@@ -418,15 +420,12 @@ code-server-ingress   *       5e1c4c56-codeserver-codese-74a8-22329140.us-east-2
 
 After a few minutes, open the browser and connect to your instance on the ALB address, if prompted for a password, use the one you created in the deployment manifest
 
-image:images/image:images/code-server.png[]
-
 image:images/code-server.png[]
 
-Congratulations, you have deployed a stateful VSCode on EKS!
+[#using-your-ide]
+= Part 6 - Using your IDE
 
-= Part 6 - Customize your IDE
-
-Now lets test the persistence of our IDE.  We will clone this repo to the [project] directory.  Then delete the deployment and redeploy. Hopefully our project is still there when we redeploy!
+Now lets start using our IDE.  We will use the Terminal to clone this repo to the [project] directory and use the GUI to create a text file.
 
 1. Navigate to the side bar and Open a new Terminal shell
 
@@ -444,9 +443,12 @@ image:images/clone-repo.png[]
 
 image:images/clone-repo.png[]
 
-= Part 7 - Delete the Deployment and re-delpoy, ensure Persistence
+[#testing-your-ide]
+= Part 7 - Test for File System Persistence
 
-. Delete the deployment
+Then delete the deployment and redeploy. Hopefully our project is still there when we redeploy!
+
+. Delete the deployment and all running pods
 +
 ----
 $ kubectl delete deployment code-server-deployment -n code-server
@@ -469,4 +471,4 @@ deployment.apps/code-server-deployment created
 
 image:images/redeploy.png[]
 
-== Congratulations! You have deoployed a stateful VSCode instance on EKS
+== Congratulations! You have deoployed a stateful VSCode instance on EKS backed by EFS
