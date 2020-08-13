@@ -114,31 +114,9 @@ $ eksctl create cluster \
  --ssh-access \
  --ssh-public-key eks.pub \
  --managed
-----
-+
-----
-[ℹ]  eksctl version 0.25.0
-[ℹ]  using region us-east-2
-[ℹ]  setting availability zones to [us-east-2c us-east-2b us-east-2a]
-[ℹ]  subnets for us-east-2c - public:192.168.0.0/19 private:192.168.96.0/19
-[ℹ]  subnets for us-east-2b - public:192.168.32.0/19 private:192.168.128.0/19
-[ℹ]  subnets for us-east-2a - public:192.168.64.0/19 private:192.168.160.0/19
-[ℹ]  using SSH public key "eks.pub" as "eksctl-code-server-nodegroup-linux-nodes-af:ba:cc:51:e1:aa:d5:db:3b:5d:bf:5a:5a:d7:06:36"
-[ℹ]  using Kubernetes version 1.17
-[ℹ]  creating EKS cluster "code-server" in "us-east-2" region with managed nodes
-[ℹ]  will create 2 separate CloudFormation stacks for cluster itself and the initial managed nodegroup
-[ℹ]  if you encounter any issues, check CloudFormation console or try 'eksctl utils describe-stacks --region=us-east-2 --cluster=code-server'
-[ℹ]  CloudWatch logging will not be enabled for cluster "code-server" in "us-east-2"
-[ℹ]  you can enable it with 'eksctl utils update-cluster-logging --region=us-east-2 --cluster=code-server'
-[ℹ]  Kubernetes API endpoint access will use default of {publicAccess=true, privateAccess=false} for cluster "code-server" in "us-east-2"
-[ℹ]  2 sequential tasks: { create cluster control plane "code-server", 2 sequential sub-tasks: { no tasks, create managed nodegroup "linux-nodes" } }
-[ℹ]  building cluster stack "eksctl-code-server-cluster"
-[ℹ]  deploying stack "eksctl-code-server-cluster"
-[ℹ]  building managed nodegroup stack "eksctl-code-server-nodegroup-linux-nodes"
-[ℹ]  deploying stack "eksctl-code-server-nodegroup-linux-nodes"
-[ℹ]  waiting for the control plane availability...
-[✔]  saved kubeconfig as "/Users/bbertka/.kube/config"
-[ℹ]  no tasks
+
+...
+
 [✔]  all EKS cluster resources for "code-server" have been created
 [ℹ]  nodegroup "linux-nodes" has 3 node(s)
 [ℹ]  node "ip-192-168-11-177.us-east-2.compute.internal" is ready
@@ -152,7 +130,6 @@ $ eksctl create cluster \
 [ℹ]  kubectl command should work with "/Users/bbertka/.kube/config", try 'kubectl get nodes'
 [✔]  EKS cluster "code-server" in "us-east-2" region is ready
 ____
-
 
 . Test that Kubectl has been configured correctly
 +
