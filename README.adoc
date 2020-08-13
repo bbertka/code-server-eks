@@ -153,6 +153,7 @@ $ eksctl create cluster \
 [✔]  EKS cluster "code-server" in "us-east-2" region is ready
 ____
 
+
 . Test that Kubectl has been configured correctly
 +
 ----
