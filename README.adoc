@@ -420,6 +420,8 @@ code-server-ingress   *       5e1c4c56-codeserver-codese-74a8-22329140.us-east-2
 
 After a few minutes, open the browser and connect to your instance on the ALB address, if prompted for a password, use the one you created in the deployment manifest
 
+image:images/login.png[]
+
 image:images/code-server.png[]
 
 [#using-your-ide]
@@ -427,21 +429,18 @@ image:images/code-server.png[]
 
 Now lets start using our IDE.  We will use the Terminal to clone this repo to the [project] directory and use the GUI to create a text file.
 
-1. Navigate to the side bar and Open a new Terminal shell
+Navigate to the side bar and Open a new Terminal shell
 
 image:images/terminal.png[]
 
-2. You will be presented with an empty terminal 
+You will be presented with an empty terminal 
 
 image:images/new-terminal.png[]
 
-3. Navigate to the ~/project folder and clone a GIT repo
+Navigate to the ~/project folder and clone a GIT repo and use the GUI to create a text file
 
 image:images/clone-repo.png[]
 
-4. Use the GUI to create a text file
-
-image:images/clone-repo.png[]
 
 [#testing-your-ide]
 = Part 7 - Test for File System Persistence
