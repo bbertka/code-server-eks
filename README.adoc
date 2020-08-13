@@ -1,4 +1,4 @@
-= Deploying VSCode with Kubernetes on Amazon EKS
+= Deploying VSCode on Amazon EKS
 
 image:images/main-dashboard.png[]
 
