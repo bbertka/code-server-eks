@@ -92,6 +92,7 @@ $ kubectl version --client
 [#deploy-an-amazon-eks-cluster]
 = Part 2 - Deploy an Amazon EKS Cluster
 In order to deploy the Docker image for code-server, we need an EKS cluster to work with.  There are two options for us for backing an EKS cluster, Fargate, or your own managed VPC nodes.  Since VSCode needs some persistence in order to make this usuable for you in a production-like setting, we are opting for managed nodes deployment to make it easier to deploy with persistent vilume claims via EBS.
+
 . Download or copy your AWS public SSH key to your current directory and make sure the permissions are set securely.
 +
 ----
@@ -102,20 +103,18 @@ $ cp ~/eks.pub . && chmod 600 eks.pub
 +
 ----
 $ eksctl create cluster \
-> --name code-server \
-> --version 1.17 \
-> --region us-east-2 \
-> --nodegroup-name linux-nodes \
-> --node-type t3.micro \
-> --nodes 3 \
-> --nodes-min 1 \
-> --nodes-max 3 \
-> --ssh-access \
-> --ssh-public-key eks.pub \
-> --managed
+ --name code-server \
+ --version 1.17 \
+ --region us-east-2 \
+ --nodegroup-name linux-nodes \
+ --node-type t3.micro \
+ --nodes 3 \
+ --nodes-min 1 \
+ --nodes-max 3 \
+ --ssh-access \
+ --ssh-public-key eks.pub \
+ --managed
 ----
-
-After a few minutes you will see the following output. Note the EKS command will create a stack for you viewable in AWS Cloudformation.
 +
 ----
 [ℹ]  eksctl version 0.25.0
