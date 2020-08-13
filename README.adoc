@@ -297,7 +297,7 @@ $ kubectl apply -f code-server-service.yml -n code-server
 service/service-code-server created
 ----
 
-.  If all goes well you should see output as such
+. If all goes well you should see output as such
 +
 ----
 $ kubectl get all -n code-server
