@@ -14,6 +14,8 @@ This repository is a walkthrough of deploying the link:https://coder.com[Coder.c
 * link:https://github.com/bbertka/code-server-eks#part-6---connect-to-code-server[Part 6 - Connect to Code-server]
 * link:https://github.com/bbertka/code-server-eks#part-7---using-code-server[Part 7 - Using Code-server]
 * link:https://github.com/bbertka/code-server-eks#part-8---test-for-file-system-persistence[Part 8 - Testing Code-server Persistence]
+* link:https://github.com/bbertka/code-server-eks#part-9---route-53-dns[Part 9 - Route 53 DNS (Coming Soon)]
+* link:https://github.com/bbertka/code-server-eks#part-10---security[Part 10 - Securing the Instance (Coming Soon)]
 
 == Assumptions
 * You already have an AWS account
@@ -472,4 +474,6 @@ deployment.apps/code-server-deployment created
 
 image:images/redeploy.png[]
 
-== Congratulations! You have deoployed a stateful VSCode instance on EKS backed by EFS
+== Congratulations! You have deoployed a stateful Code-server  instance on EKS backed by EFS
+
+Next Steps:  Route 53 DNS and Security.  You will need your own or company domain/subdamin to use a vaniry URI.  Also, this lab is not using certificates so connections are not HTTPS yet.
