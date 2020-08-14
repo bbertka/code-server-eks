@@ -268,7 +268,7 @@ $ aws efs describe-file-systems --query "FileSystems[*].FileSystemId" --output t
 fs-ab9729d3
 ----
 
-. Create an EFS Application access point for the Coder user to write to on behalf of the user
+. The container runs as user 'Coder' with UID 1000 and this impacts writing to the EFS volume. Create an EFS Application access point for the 'Coder' user to write to our project file mount on behalf of yourself or whoever is making changed in the IDE.
 +
 ----
 aws efs create-access-point --file-system-id fs-738c320b --posix-user Uid=1000,Gid=1000 --root-directory "Path=/home/coder/project, CreationInfo={OwnerUid=1000,OwnerGid=1000,Permissions=777}"
