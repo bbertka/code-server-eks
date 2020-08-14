@@ -1,4 +1,4 @@
-= Deploying VSCode on Amazon EKS
+= Deploying Code-server on Amazon EKS
 
 image:images/code-server.png[]
 
