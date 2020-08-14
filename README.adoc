@@ -9,10 +9,10 @@ This repository is a walkthrough of deploying the link:https://coder.com[Coder.c
 * link:https://github.com/bbertka/code-server-eks#part-1---preparing-for-installation[Install Readiness]
 * link:https://github.com/bbertka/code-server-eks#part-2---deploy-an-amazon-eks-cluster[Deploy EKS Cluster]
 * link:https://github.com/bbertka/code-server-eks#part-3---setup-cluster-ingress[Setup ALB Ingress for your Cluster]
-* link:https://github.com/bbertka/code-server-eks#part-4---deploy-code-server[Deploy code-server]]
-* link:https://github.com/bbertka/code-server-eks#part-5---connect-to-your-ide[Connect to your IDE]]
-* link:https://github.com/bbertka/code-server-eks#part-6---using-your-ide[Using your IDE]]
-* link:https://github.com/bbertka/code-server-eks#part-7---testing-your-ide[Testing your IDE]]
+* link:https://github.com/bbertka/code-server-eks#part-4---deploy-code-server[Deploy code-server]
+* link:https://github.com/bbertka/code-server-eks#part-5---connect-to-your-ide[Connect to your IDE]
+* link:https://github.com/bbertka/code-server-eks#part-6---using-your-ide[Using your IDE]
+* link:https://github.com/bbertka/code-server-eks#part-7---testing-your-ide[Testing your IDE]
 
 == Assumptions
 * You already have an AWS account
