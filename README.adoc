@@ -6,14 +6,14 @@ image:images/code-server.png[]
 This repository is a walkthrough of deploying the link:https://coder.com[Coder.com] official link:https://hub.docker.com/r/codercom/code-server[code-server Docker image of VSCode] in a repeatable tutorial/workshop format.  After working through this lab you will have a web-accessable deployment of VSCode running on Amazon EKS Kubernetes, backed by persistent EFS volumes.  Now you can code anywhere using your preferred IDE!
 
 == Contents
-* link:https://github.com/bbertka/code-server-eks#part-1---preparing-for-installation[Install Readiness]
-* link:https://github.com/bbertka/code-server-eks#part-2---deploy-an-amazon-eks-cluster[Deploy EKS Cluster]
-* link:https://github.com/bbertka/code-server-eks#part-3---setup-cluster-ingress[Setup ALB Ingress for your Cluster]
-* link:https://github.com/bbertka/code-server-eks#part-4---set-up-persistent-file-system[Setup EFS for file persistence]
-* link:https://github.com/bbertka/code-server-eks#part-5---deploy-code-server[Deploy code-server]
-* link:https://github.com/bbertka/code-server-eks#part-6---connect-to-your-ide[Connect to your IDE]
-* link:https://github.com/bbertka/code-server-eks#part-7---using-your-ide[Using your IDE]
-* link:https://github.com/bbertka/code-server-eks#part-8---testing-your-ide[Testing your IDE]
+* link:https://github.com/bbertka/code-server-eks#part-1---preparing-for-installation[Part 1 - Install Readiness]
+* link:https://github.com/bbertka/code-server-eks#part-2---deploy-an-amazon-eks-cluster[Part 2 - Deploy EKS Cluster]
+* link:https://github.com/bbertka/code-server-eks#part-3---setup-cluster-ingress[Part 3 - Setup ALB Ingress for your Cluster]
+* link:https://github.com/bbertka/code-server-eks#part-4---set-up-persistent-file-system[Part 4 - Setup EFS for file persistence]
+* link:https://github.com/bbertka/code-server-eks#part-5---deploy-code-server[Part 5 - Deploy Code-server]
+* link:https://github.com/bbertka/code-server-eks#part-6---connect-to-your-ide[Part 6 - Connect to Code-server]
+* link:https://github.com/bbertka/code-server-eks#part-7---using-your-ide[Part 7 - Using Code-server]
+* link:https://github.com/bbertka/code-server-eks#part-8---test-for-file-system-persistence[Part 8 - Testing Code-server Persistence]
 
 == Assumptions
 * You already have an AWS account
@@ -444,7 +444,7 @@ Navigate to the ~/project folder and clone a GIT repo and use the GUI to create 
 image:images/clone-repo.png[]
 
 
-[#testing-your-ide]
+[#test-for-file-system-persistence]
 = Part 8 - Test for File System Persistence
 
 Then delete the deployment and redeploy. Hopefully our project is still there when we redeploy!
