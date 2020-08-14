@@ -9,10 +9,11 @@ This repository is a walkthrough of deploying the link:https://coder.com[Coder.c
 * link:https://github.com/bbertka/code-server-eks#part-1---preparing-for-installation[Install Readiness]
 * link:https://github.com/bbertka/code-server-eks#part-2---deploy-an-amazon-eks-cluster[Deploy EKS Cluster]
 * link:https://github.com/bbertka/code-server-eks#part-3---setup-cluster-ingress[Setup ALB Ingress for your Cluster]
-* link:https://github.com/bbertka/code-server-eks#part-4---deploy-code-server[Deploy code-server]
-* link:https://github.com/bbertka/code-server-eks#part-5---connect-to-your-ide[Connect to your IDE]
-* link:https://github.com/bbertka/code-server-eks#part-6---using-your-ide[Using your IDE]
-* link:https://github.com/bbertka/code-server-eks#part-7---testing-your-ide[Testing your IDE]
+* link:https://github.com/bbertka/code-server-eks#part-4---set-up-persistent-file-system[Setup EFS for file persistence]
+* link:https://github.com/bbertka/code-server-eks#part-5---deploy-code-server[Deploy code-server]
+* link:https://github.com/bbertka/code-server-eks#part-6---connect-to-your-ide[Connect to your IDE]
+* link:https://github.com/bbertka/code-server-eks#part-7---using-your-ide[Using your IDE]
+* link:https://github.com/bbertka/code-server-eks#part-8---testing-your-ide[Testing your IDE]
 
 == Assumptions
 * You already have an AWS account
@@ -239,7 +240,8 @@ alb-ingress-controller-646d767ccf-4h624   1/1     Running   0          12s
 ----
 
 
-= Part 3 - Set up Persistent File System
+[#set-up-persistent-file-system]
+= Part 4 - Set up Persistent File System
 
 . Get your VPC ID for your cluster (again)
 +
@@ -314,7 +316,7 @@ gp2 (default)   kubernetes.io/aws-ebs   Delete          WaitForFirstConsumer   f
 ----
 
 [#deploy-code-server]
-= Part 3 - Deploy Code Server
+= Part 5 - Deploy Code Server
 
 . Create our code-server namespace
 +
@@ -400,7 +402,7 @@ replicaset.apps/code-server-deployment-6555d99486   1         1         1       
 ----
 
 [#connect-to-your-ide]
-= Part 5 - Connect to your IDE
+= Part 6 - Connect to your IDE
 Now that your code-server deployment is sucessfully running on EKS with an EFS backed persistent volume, we need to create the ALB ingress we will use to connect to the instance in our browser.
 
 . Create the ALB Ingress 
@@ -425,7 +427,7 @@ image:images/login.png[]
 image:images/code-server.png[]
 
 [#using-your-ide]
-= Part 6 - Using your IDE
+= Part 7 - Using your IDE
 
 Now lets start using our IDE.  We will use the Terminal to clone this repo to the [project] directory and use the GUI to create a text file.
 
@@ -443,7 +445,7 @@ image:images/clone-repo.png[]
 
 
 [#testing-your-ide]
-= Part 7 - Test for File System Persistence
+= Part 8 - Test for File System Persistence
 
 Then delete the deployment and redeploy. Hopefully our project is still there when we redeploy!
 
