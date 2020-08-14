@@ -21,7 +21,7 @@ spec:
         - containerPort: 8080
         env:
         - name: PASSWORD
-          value: "alwaysbekind"
+          value: "CHANGE_ME"
         - name: PUID
           value: "1000"
         - name: PGID
