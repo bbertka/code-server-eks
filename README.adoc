@@ -11,8 +11,8 @@ This repository is a walkthrough of deploying the link:https://coder.com[Coder.c
 * link:https://github.com/bbertka/code-server-eks#part-3---setup-cluster-ingress[Part 3 - Setup ALB Ingress for your Cluster]
 * link:https://github.com/bbertka/code-server-eks#part-4---set-up-persistent-file-system[Part 4 - Setup EFS for file persistence]
 * link:https://github.com/bbertka/code-server-eks#part-5---deploy-code-server[Part 5 - Deploy Code-server]
-* link:https://github.com/bbertka/code-server-eks#part-6---connect-to-your-ide[Part 6 - Connect to Code-server]
-* link:https://github.com/bbertka/code-server-eks#part-7---using-your-ide[Part 7 - Using Code-server]
+* link:https://github.com/bbertka/code-server-eks#part-6---connect-to-code-server[Part 6 - Connect to Code-server]
+* link:https://github.com/bbertka/code-server-eks#part-7---using-code-server[Part 7 - Using Code-server]
 * link:https://github.com/bbertka/code-server-eks#part-8---test-for-file-system-persistence[Part 8 - Testing Code-server Persistence]
 
 == Assumptions
@@ -401,8 +401,8 @@ NAME                                                DESIRED   CURRENT   READY   
 replicaset.apps/code-server-deployment-6555d99486   1         1         1       28s
 ----
 
-[#connect-to-your-ide]
-= Part 6 - Connect to your IDE
+[#connect-to-code-server]
+= Part 6 - Connect to Code-server
 Now that your code-server deployment is sucessfully running on EKS with an EFS backed persistent volume, we need to create the ALB ingress we will use to connect to the instance in our browser.
 
 . Create the ALB Ingress 
@@ -426,8 +426,8 @@ image:images/login.png[]
 
 image:images/code-server.png[]
 
-[#using-your-ide]
-= Part 7 - Using your IDE
+[#using-code-server]
+= Part 7 - Using Code-server
 
 Now lets start using our IDE.  We will use the Terminal to clone this repo to the [project] directory and use the GUI to create a text file.
 
